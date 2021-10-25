@@ -37,7 +37,7 @@ func (hh *HealthHandler) Status(w http.ResponseWriter, r *http.Request) {
 func (hh *HealthHandler) StatusJSON(w http.ResponseWriter, r *http.Request) {
 	data := hh.healthStore.GetAll()
 
-	categories := make(map[string][]HealthCheckStatus, 0)
+	categories := make(map[string][]HealthCheckStatus)
 
 	for _, i := range data {
 		for _, t := range i.Service.Tags {
@@ -55,14 +55,13 @@ func (hh *HealthHandler) StatusJSON(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	fmt.Fprintf(w, string(resp))
+	fmt.Fprint(w, string(resp))
 }
 
 func (hh *HealthHandler) StatusHTML(w http.ResponseWriter, r *http.Request) {
-
 	data := hh.healthStore.GetAll()
 
-	categories := make(map[string][]HealthCheckStatus, 0)
+	categories := make(map[string][]HealthCheckStatus)
 
 	for _, i := range data {
 		for _, t := range i.Service.Tags {
@@ -82,5 +81,11 @@ func (hh *HealthHandler) StatusHTML(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tmpl.Execute(w, categories)
+	err = tmpl.Execute(w, categories)
+	if err != nil {
+		hh.logger.Error("could not execute template", log.WithError(err))
+		fmt.Fprintf(w, "500")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 }

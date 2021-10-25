@@ -21,7 +21,7 @@ type Service struct {
 func (s *Service) GetID() string {
 	if s.ID == "" {
 		algorithm := md5.New()
-		algorithm.Write([]byte(fmt.Sprintf("%s-%s", s.Name, s.URL)))
+		_, _ = algorithm.Write([]byte(fmt.Sprintf("%s-%s", s.Name, s.URL)))
 		s.ID = hex.EncodeToString(algorithm.Sum(nil))
 	}
 	return s.ID

@@ -26,11 +26,7 @@ func main() {
 		services:    conf.Services,
 		logger:      logger,
 	}
-
-	healthcheckerLifecycle := &HealthCheckLifecycle{
-		monitor:         m,
-		refreshInterval: conf.RefreshInterval,
-	}
+	healthcheckerLifecycle := NewHealthCheckLifescycle(m, conf.RefreshInterval)
 
 	rlm := NewRequestLoggingMiddleware(logger)
 	hh := NewHealthHandler(hs, logger)

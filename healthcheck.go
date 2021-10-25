@@ -31,6 +31,7 @@ func (hc *HealthChecker) check(addr string) (bool, error) {
 	if err != nil {
 		return false, fmt.Errorf("could not make http request to check healthiness: %w", err)
 	}
+	defer resp.Body.Close()
 	if resp.StatusCode != 200 {
 		return false, fmt.Errorf("service returned unexpected http status code %d", resp.StatusCode)
 	}
@@ -125,8 +126,15 @@ type HealthCheckLifecycle struct {
 	doneChan        chan bool
 }
 
+func NewHealthCheckLifescycle(m *HealthMonitor, r int) *HealthCheckLifecycle {
+	return &HealthCheckLifecycle{
+		monitor:         m,
+		refreshInterval: r,
+		doneChan:        make(chan bool),
+	}
+}
+
 func (l *HealthCheckLifecycle) OnStart(_ context.Context) error {
-	l.doneChan = make(chan bool, 1)
 	ticker := time.NewTicker(time.Duration(l.refreshInterval) * time.Second)
 	go func() {
 		defer ticker.Stop()
