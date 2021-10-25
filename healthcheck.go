@@ -122,13 +122,21 @@ func (m *HealthMonitor) Check() {
 type HealthCheckLifecycle struct {
 	monitor         *HealthMonitor
 	refreshInterval int
+	doneChan        chan bool
 }
 
 func (l *HealthCheckLifecycle) OnStart(_ context.Context) error {
+	l.doneChan = make(chan bool, 1)
 	ticker := time.NewTicker(time.Duration(l.refreshInterval) * time.Second)
 	go func() {
-		for range ticker.C {
-			l.monitor.Check()
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ticker.C:
+				l.monitor.Check()
+			case <-l.doneChan:
+				return
+			}
 		}
 	}()
 	l.monitor.Check()
@@ -136,6 +144,6 @@ func (l *HealthCheckLifecycle) OnStart(_ context.Context) error {
 }
 
 func (l *HealthCheckLifecycle) OnStop(_ context.Context) error {
-	// @todo - stop ticker properly
+	l.doneChan <- true
 	return nil
 }
