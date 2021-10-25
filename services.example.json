@@ -1,0 +1,12 @@
+[
+    {
+        "name": "My Service name",
+        "url": "http://example.com",
+        "tags": ["dev"]
+    },
+    {
+        "name": "My other service",
+        "url": "http://example.com",
+        "tags": ["staging", "myCategory"]
+    }
+]
